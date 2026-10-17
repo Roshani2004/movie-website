@@ -1,0 +1,22 @@
+# Environment variables (DO NOT UPLOAD)
+.env
+
+# Virtual Environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django database and logs
+db.sqlite3
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Static files (optional, if you collect them locally)
+staticfiles/

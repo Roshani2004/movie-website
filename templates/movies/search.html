@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% block title %}Search Movies{% endblock %}
+
+{% block container_class %}{% endblock %} <!-- Removes default margin for full-width background -->
+
+{% block extra_css %}
+<style>
+    /* Background Image for Search Page */
+    body {
+        background: linear-gradient(rgba(10, 10, 10, 0.85), rgba(10, 10, 10, 0.95)), 
+                    url('https://i.pinimg.com/736x/13/50/d3/1350d3a4ff477fa9dcfc8459e5be278d.jpg') 
+                    no-repeat center center fixed;
+        background-size: cover;
+    }
+
+    .search-page-wrapper {
+        min-height: calc(100vh - 70px);
+        padding: 3rem 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .search-header { margin-bottom: 2rem; text-align: center; }
+    .search-header h1 { 
+        font-size: 2.8rem; 
+        margin-bottom: 1.5rem; 
+        color: white;
+        text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+    }
+    
+    /* Search Bar Container */
+    .search-container { position: relative; max-width: 600px; margin: 0 auto; z-index: 50; }
+    .search-input-wrapper { position: relative; display: flex; align-items: center; }
+    .search-input-wrapper input {
+        width: 100%; padding: 1.2rem 1.2rem 1.2rem 3rem;
+        background: rgba(20, 20, 20, 0.85); 
+        backdrop-filter: blur(10px);
+        border: 1px solid #444;
+        border-radius: 30px; color: white; font-size: 1.1rem; transition: all 0.3s;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .search-input-wrapper input:focus { 
+        outline: none; 
+        border-color: #e50914; 
+        background: rgba(10, 10, 10, 0.95); 
+        box-shadow: 0 0 20px rgba(229,9,20,0.3); 
+    }
+    
+    .search-icon { position: absolute; left: 1.2rem; color: #888; width: 20px; }
+    .clear-btn {
+        position: absolute; right: 1.2rem; background: none; border: none;
+        color: #888; font-size: 1.2rem; cursor: pointer; display: none;
+    }
+    .clear-btn:hover { color: #fff; }
+
+    /* Dropdown */
+    .suggestions {
+        position: absolute; top: calc(100% + 10px); left: 0; right: 0;
+        background: rgba(20, 20, 20, 0.95); 
+        backdrop-filter: blur(10px);
+        border: 1px solid #444; border-radius: 12px;
+        overflow: hidden; display: none; box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    }
+    .suggestion-item {
+        display: flex; align-items: center; gap: 1rem; padding: 0.8rem 1rem;
+        text-decoration: none; color: white; border-bottom: 1px solid #333; transition: background 0.2s;
+    }
+    .suggestion-item:hover, .suggestion-item.active { background: rgba(255, 255, 255, 0.1); }
+    .suggestion-item img { width: 40px; height: 60px; object-fit: cover; border-radius: 4px; }
+    .suggestion-info h4 { margin: 0; font-size: 1rem; }
+    .suggestion-info p { margin: 0; font-size: 0.8rem; color: #aaa; }
+
+    /* Movie Grid */
+    .results-label {
+        text-align: center;
+        color: #ccc;
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+
+    .movie-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+        gap: 1.5rem; 
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .movie-card {
+        background: rgba(17, 17, 17, 0.8); 
+        backdrop-filter: blur(5px);
+        border-radius: 12px; 
+        overflow: hidden;
+        position: relative; cursor: pointer; 
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .movie-card:hover { 
+        transform: translateY(-5px) scale(1.03); 
+        box-shadow: 0 15px 30px rgba(0,0,0,0.8); 
+        z-index: 10; 
+    }
+    
+    .poster-container { position: relative; padding-top: 150%; /* Aspect ratio */ }
+    .poster-container img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    
+    /* Hover Overlay */
+    .movie-overlay {
+        position: absolute; inset: 0; 
+        background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        opacity: 0; transition: opacity 0.3s; 
+        display: flex; flex-direction: column; justify-content: flex-end; padding: 1rem;
+    }
+    .movie-card:hover .movie-overlay { opacity: 1; }
+    .movie-overlay .btn-view { 
+        background: #e50914; color: white; text-align: center; 
+        padding: 0.5rem; border-radius: 4px; font-weight: bold; text-decoration: none; 
+    }
+
+    .movie-info { padding: 1rem; }
+    .movie-info h3 { font-size: 1.1rem; margin-bottom: 0.3rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+    .movie-meta { display: flex; justify-content: space-between; font-size: 0.85rem; color: #aaa; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-page-wrapper">
+    <div class="search-header">
+        <h1>Discover Movies</h1>
+        
+        <!-- Search Bar -->
+        <div class="search-container" id="searchContainer">
+            <div class="search-input-wrapper">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input type="text" id="searchInput" placeholder="Search movies, actors, or genres..." value="{{ query }}" autocomplete="off">
+                <button class="clear-btn" id="clearBtn">&times;</button>
+            </div>
+            <!-- Suggestions Dropdown -->
+            <div class="suggestions" id="suggestionsBox"></div>
+        </div>
+    </div>
+
+    <!-- Results Label -->
+    {% if query %}
+        <p class="results-label">Showing results for "<strong>{{ query }}</strong>"</p>
+    {% else %}
+        <p class="results-label">Trending Now</p>
+    {% endif %}
+
+    <!-- Results Grid -->
+    <div class="movie-grid">
+        {% for movie in movies %}
+        <div class="movie-card" onclick="window.location.href='/movie/{{ movie.id }}/'">
+            <div class="poster-container">
+                {% if movie.poster_path %}
+                    <img src="https://image.tmdb.org/t/p/w300{{ movie.poster_path }}" alt="{{ movie.title }}" loading="lazy">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x450/111/888?text=No+Poster" alt="No Poster">
+                {% endif %}
+                
+                <div class="movie-overlay">
+                    <a href="/movie/{{ movie.id }}/" class="btn-view">View Details</a>
+                </div>
+            </div>
+            <div class="movie-info">
+                <h3 title="{{ movie.title }}">{{ movie.title }}</h3>
+                <div class="movie-meta">
+                    <span>{{ movie.release_date|slice:":4"|default:"N/A" }} · {{ movie.genre_name }}</span>
+                    <span style="color: #f5c518;">⭐ {{ movie.vote_average|floatformat:1 }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 4rem;">
+            <h2 style="color: #ccc;">No movies found</h2>
+            <p style="color: #888;">Try adjusting your search keywords.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('searchInput');
+    const suggestionsBox = document.getElementById('suggestionsBox');
+    const clearBtn = document.getElementById('clearBtn');
+    const searchContainer = document.getElementById('searchContainer');
+    let debounceTimer;
+
+    // Show/hide clear button
+    searchInput.addEventListener('input', function() {
+        clearBtn.style.display = this.value.length > 0 ? 'block' : 'none';
+        
+        clearTimeout(debounceTimer);
+        const query = this.value.trim();
+
+        if (query.length < 2) {
+            suggestionsBox.style.display = 'none';
+            return;
+        }
+
+        // Debounce API call
+        debounceTimer = setTimeout(() => {
+            fetch(`/api/live-search/?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.results && data.results.length > 0) {
+                        suggestionsBox.innerHTML = data.results.map(movie => `
+                            <a href="/movie/${movie.id}/" class="suggestion-item">
+                                <img src="${movie.poster}" alt="${movie.title}">
+                                <div class="suggestion-info">
+                                    <h4>${movie.title}</h4>
+                                    <p>${movie.year} · ⭐ ${movie.rating}</p>
+                                </div>
+                            </a>
+                        `).join('');
+                        suggestionsBox.style.display = 'block';
+                    } else {
+                        suggestionsBox.innerHTML = '<div style="padding:1rem;text-align:center;color:#aaa;">No matches found</div>';
+                        suggestionsBox.style.display = 'block';
+                    }
+                });
+        }, 300); // 300ms debounce
+    });
+
+    // Clear button logic
+    clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.style.display = 'none';
+        suggestionsBox.style.display = 'none';
+        searchInput.focus();
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchContainer.contains(e.target)) {
+            suggestionsBox.style.display = 'none';
+        }
+    });
+
+    // Close dropdown on Enter (submit search)
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            suggestionsBox.style.display = 'none';
+            window.location.href = `/search/?q=${encodeURIComponent(searchInput.value)}`;
+        }
+    });
+});
+</script>
+{% endblock %}

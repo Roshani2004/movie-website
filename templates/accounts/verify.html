@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Verify Code{% endblock %}
+{% block content %}
+<div style="max-width: 400px; margin: 4rem auto;">
+    <h2 style="margin-bottom: 0.5rem;">Enter Verification Code</h2>
+    <p style="color: #888; margin-bottom: 2rem;">Check your email for a 6-digit code. It expires in 10 minutes.</p>
+    <form method="POST" id="otpForm">
+        {% csrf_token %}
+        <input type="text" name="otp" id="otpInput" maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
+               placeholder="000000" required autofocus
+               style="width:100%;padding:1rem;font-size:1.5rem;text-align:center;letter-spacing:0.5rem;background:#111;border:1px solid #333;border-radius:8px;color:white;margin-bottom:1rem;">
+        <button type="submit" class="btn" style="width:100%;padding:1rem;">Verify & Login</button>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('otpInput').addEventListener('input', function() {
+    if (this.value.length === 6) document.getElementById('otpForm').submit();
+});
+</script>
+{% endblock %}

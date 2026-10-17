@@ -1,0 +1,16 @@
+<a href="/movie/{{ movie.id }}/" class="movie-card">
+    <div class="poster-container">
+        {% if movie.poster_path %}
+            <img src="https://image.tmdb.org/t/p/w300{{ movie.poster_path }}" alt="{{ movie.title }}" loading="lazy">
+        {% else %}
+            <img src="https://via.placeholder.com/300x450/111/888?text=No+Poster" alt="No Poster">
+        {% endif %}
+    </div>
+    <div class="movie-info">
+        <h3 title="{{ movie.title }}">{{ movie.title }}</h3>
+        <div class="movie-meta">
+            <span>{{ movie.release_date|slice:":4"|default:"N/A" }}</span>
+            <span style="color: #f5c518;">⭐ {{ movie.vote_average|floatformat:1 }}</span>
+        </div>
+    </div>
+</a>
