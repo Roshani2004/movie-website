@@ -67,7 +67,7 @@ DATABASES = {
         'PORT': os.environ.get('DB_PORT'),
         'OPTIONS': {
             'ssl': {
-                'ssl_mode': 'REQUIRED'  # <-- This is the magic line for Aiven
+                'ca': os.path.join(BASE_DIR, 'ca.pem'), # Tells Django where the certificate is
             },
         },
     }
