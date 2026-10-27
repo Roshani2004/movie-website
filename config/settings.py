@@ -68,9 +68,7 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
         'OPTIONS': {
-            'ssl': {
-                'ca': os.path.join(BASE_DIR, 'ca.pem'), # Path to the downloaded certificate
-            },
+            'ssl_mode': 'REQUIRED',
         },
     }
 }
