@@ -66,10 +66,10 @@ DATABASES = {
         'HOST': os.environ.get('DB_HOST'),
         'PORT': os.environ.get('DB_PORT'),
         'OPTIONS': {
-            'ssl': {
-                'ca': os.path.join(BASE_DIR, 'ca.pem'), # Tells Django where the certificate is
-            },
-        },
+    'ssl': {
+        'ssl_mode': 'REQUIRED'
+    },
+},
     }
 }
 
@@ -121,3 +121,5 @@ os.environ.setdefault(
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
